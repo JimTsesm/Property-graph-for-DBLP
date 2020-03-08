@@ -13,7 +13,7 @@ CREATE (c)-[:HAS]->(e)
 LOAD CSV WITH HEADERS FROM "file:///Paper(Edition).csv" AS csvLine
 CREATE (e:Paper {key: csvLine.key, title: csvLine.title, year: csvLine.year})
 with csvLine as csvLine
-MATCH (p:Paper {key: csvLine.key}), (e:Edition {crossref: csvLine.crossref})
+MATCH (p:Paper {key: csvLine.key}), (e:Edition {key: csvLine.crossref})
 CREATE (p)-[:PUBLISHED]->(e)
 
 # Create Author for Edition's Paper
