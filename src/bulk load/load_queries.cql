@@ -25,3 +25,9 @@ LOAD CSV WITH HEADERS FROM "file:///Edition_Paper_Author.csv" AS csvLine
 MATCH (p:Paper {key: csvLine.key}), (a:Author {name: csvLine.author})
 CREATE (a)-[:WRITES]->(p)
 
+# Create citations
+LOAD CSV WITH HEADERS FROM "file:///Cite.csv" AS csvLine
+Create (c:Citation {source_id: csvLine.New_ID})
+with csvLine as csvLine
+MATCH (p:Paper {key: csvLine.key}), (a:Citation {source_id: csvLine.New_ID})
+CREATE (p)-[:CITED_BY]->(a)
