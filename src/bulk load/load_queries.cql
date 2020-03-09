@@ -31,3 +31,29 @@ Create (c:Citation {source_id: csvLine.New_ID})
 with csvLine as csvLine
 MATCH (p:Paper {key: csvLine.key}), (a:Citation {source_id: csvLine.New_ID})
 CREATE (p)-[:CITED_BY]->(a)
+
+# Create Journal
+LOAD CSV FROM "file:///journal.csv" as csvLine
+CREATE(j:Journal {name: csvLine[0]})
+
+# Create Volume for Journal
+LOAD CSV WITH HEADERS FROM "file:///volume(journal).csv" as csvLine
+CREATE (v:Volume {key: csvLine.key, year: csvLine.year})
+WITH csvLine as csvLine, v as v
+MATCH (j:Journal {name: csvLine.journal})
+CREATE (j)-[:HAS]->(v)
+
+# Create Paper for Volume
+LOAD CSV WITH HEADERS FROM "file:///paper(volume).csv" as csvLine
+CREATE (p:Paper {key: csvLine.key, title: csvLine.title, year: csvLine.year})
+WITH csvLine as csvLine, p as p
+MATCH(v:Volume{key: csvLine.crossref})
+CREATE (p)-[r:PUBLISHED_IN]->(v)
+
+
+# Create Author for Journal's Paper
+LOAD CSV WITH HEADERS FROM "file:///author(paper).csv" AS csvLine
+CREATE (e:Author {name: csvLine.author})
+WITH csvLine as csvLine, e as e
+MATCH (p:Paper {key: csvLine.key})
+CREATE (e)-[:WRITES]->(p)
