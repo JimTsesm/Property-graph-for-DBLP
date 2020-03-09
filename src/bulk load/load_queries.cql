@@ -1,12 +1,12 @@
 # Create Conference
-LOAD CSV FROM "file:///Conference.csv" AS csvLine
+LOAD CSV FROM "file:///Conferences.csv" AS csvLine
 CREATE (c:Conference {name: csvLine[0]})
 
 # Create Edition nodes first and then the edges between Conferences and Editions
 LOAD CSV WITH HEADERS FROM "file:///Edition.csv" AS csvLine
 CREATE (e:Edition {key: csvLine.key, year: csvLine.year})
-with csvLine as csvLine
-MATCH (c:Conference {name: csvLine.booktitle}), (e:Edition {key: csvLine.key})
+with csvLine as csvLine, e as e
+MATCH (c:Conference {name: csvLine.booktitle})
 CREATE (c)-[:HAS]->(e)
 
 # Create Paper for Edition and then the edges between Paper and Edition
