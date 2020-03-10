@@ -62,14 +62,14 @@ CREATE (e)-[:WRITES]->(p)
 LOAD CSV FROM "file:///Workshops.csv" AS csvLine
 CREATE (c:Workshop {name: csvLine[0]})
 
-# Create Edition nodes first and then the edges between Workshop and Editions
+# Create Edition nodes first and then link the edges between Workshop and Editions
 LOAD CSV WITH HEADERS FROM "file:///Edition(Workshop).csv" AS csvLine
 CREATE (e:Edition {key: csvLine.key, year: csvLine.year})
 with csvLine as csvLine, e as e
 MATCH (c:Workshop {name: csvLine.booktitle})
 CREATE (c)-[:HAS]->(e)
 
-# Create Proceeding nodes first and then the edges between Proceeding and Conference/Workshop
+# Create Proceeding nodes first and then link the edges between Proceeding and Conference/Workshop
 LOAD CSV WITH HEADERS FROM "file:///Proceedings.csv" AS csvLine
 CREATE (p:Proceeding {key: csvLine.key, name: csvLine.name, isbn: csvLine.isbn})
 with csvLine as csvLine, p as p
@@ -78,3 +78,4 @@ CREATE (w)-[:HAS]->(p)
 with csvLine as csvLine, p as p
 MATCH (c:Conference {name: csvLine.booktitle})
 CREATE (c)-[:HAS]->(p)
+
