@@ -2,19 +2,19 @@
 LOAD CSV FROM "file:///Conferences.csv" AS csvLine
 CREATE (c:Conference {name: csvLine[0]})
 
-# Create Edition nodes first and then the edges between Conferences and Editions
+# Create Edition nodes first and then link edges between Conferences and Editions
 LOAD CSV WITH HEADERS FROM "file:///Edition.csv" AS csvLine
 CREATE (e:Edition {key: csvLine.key, year: csvLine.year})
 with csvLine as csvLine, e as e
 MATCH (c:Conference {name: csvLine.booktitle})
 CREATE (c)-[:HAS]->(e)
 
-# Create Paper for Edition and then the edges between Paper and Edition
+# Create Paper for Edition and then link edges between Paper and Edition
 LOAD CSV WITH HEADERS FROM "file:///Paper(Edition).csv" AS csvLine
-CREATE (e:Paper {key: csvLine.key, title: csvLine.title, year: csvLine.year})
-with csvLine as csvLine
-MATCH (p:Paper {key: csvLine.key}), (e:Edition {key: csvLine.crossref})
-CREATE (p)-[:PUBLISHED]->(e)
+CREATE (p:Paper {key: csvLine.key, title: csvLine.title, year: csvLine.year})
+with csvLine as csvLine, p as p
+MATCH (e:Edition {key: csvLine.crossref})
+CREATE (p)-[:PUBLISHED_IN]->(e)
 
 # Create Author for Edition's Paper
 LOAD CSV FROM "file:///Author(Edition_Paper).csv" AS csvLine
@@ -28,9 +28,9 @@ CREATE (a)-[:WRITES]->(p)
 # Create citations
 LOAD CSV WITH HEADERS FROM "file:///Cite.csv" AS csvLine
 Create (c:Citation {source_id: csvLine.New_ID})
-with csvLine as csvLine
-MATCH (p:Paper {key: csvLine.key}), (a:Citation {source_id: csvLine.New_ID})
-CREATE (p)-[:CITED_BY]->(a)
+with csvLine as csvLine, c as c
+MATCH (p:Paper {key: csvLine.key})
+CREATE (p)-[:CITED_BY]->(c)
 
 # Create Journal
 LOAD CSV FROM "file:///journal.csv" as csvLine
