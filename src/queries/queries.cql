@@ -1,4 +1,4 @@
-# Calculate h-index for every Author
+// Find the h-indexes of the authors in your graph
 MATCH(a:Author)-[:WRITES]->(p:Paper)-[:CITED_BY]->(c:Citation)
 WITH a as authors, p.key as papers, count(c) as number_of_citations
 ORDER BY number_of_citations DESC
@@ -12,3 +12,11 @@ CASE
 END AS hindex
 WHERE hindex <> -1
 RETURN authors.name, max(hindex)
+
+// For each conference find its community: i.e., those authors that have published papers
+// on that conference in, at least, 4 different editions.
+MATCH(c:Conference)-[:HAS]->(e:Edition)<-[:PUBLISHED_IN]-(p:Paper)<-[w:WRITES]-(a:Author)
+WITH c as conference, a as author, count(distinct e) as number_of_editions
+WHERE number_of_editions >= 4
+RETURN conference.name as Conference, collect(author.name) as Community
+
