@@ -2,8 +2,9 @@
 LOAD CSV WITH HEADERS FROM "file:///Reviews.csv" AS csvLine
 CREATE (r:Review {content: csvLine.content, sug_decision: csv.decision})
 with csvLine as csvLine, r as r
-MATCH (rev:Reviewer {source_id: csvLine.id})
-CREATE (rev)-[:SENDS]->(r)
+MATCH (vr:Reviewer {source_id: csvLine.id})
+MATCH (p:Paper{key: csvLine.paper})
+CREATE (vr)-[:SENDS]->(r), (r)-[:FOR]->(p)
 
 # Create Universities 
 LOAD CSV WITH HEADERS FROM "file:///Universities.csv" AS csvLine
