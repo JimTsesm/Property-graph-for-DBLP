@@ -88,3 +88,25 @@ MATCH (a: Author{ name: csvLine.reviewer })
 CREATE (rv)-[:IS_A]->(a)
 CREATE (rv)-[:SENDS]->(rev)
 CREATE (rev)-[:FOR]->(p)
+
+# Create Keywords
+CREATE(k:Keyword {name: 'data management'})
+CREATE(k2:Keyword {name: 'indexing'})
+CREATE(k3:Keyword {name: 'data modeling'})
+CREATE(k4:Keyword {name: 'big data'})
+CREATE(k5:Keyword {name: 'data processing'})
+CREATE(k6:Keyword {name: 'data storage'})
+CREATE(k7:Keyword {name: 'data querying'})
+CREATE(k8:Keyword {name: 'computer vision'})
+CREATE(k9:Keyword {name: 'keyword1'})
+CREATE(k10:Keyword {name: 'keyword2'})
+CREATE(k11:Keyword {name: 'keyword3'})
+CREATE(k12:Keyword {name: 'keyword4'})
+
+# Link Paper to Keyword
+LOAD CSV WITH HEADERS FROM "file:///Keyword.csv" as csvLine
+MATCH (p: Paper{ key: csvLine.key }), (k1: Keyword{ name: csvLine.keyword1 }), (k2: Keyword{ name: csvLine.keyword2 })
+CREATE (p)-[:CONTAINS]->(k1)
+CREATE (p)-[:CONTAINS]->(k2)
+
+
