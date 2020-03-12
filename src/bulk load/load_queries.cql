@@ -16,8 +16,8 @@ with csvLine as csvLine, p as p
 MATCH (e:Edition {key: csvLine.crossref})
 CREATE (p)-[:PUBLISHED_IN]->(e)
 
-# Create Author for Edition's Paper
-LOAD CSV FROM "file:///Author(Edition_Paper).csv" AS csvLine
+# Create Authors
+LOAD CSV FROM "file:///authors.csv" AS csvLine
 CREATE (e:Author {name: csvLine[0]})
 
 # Create the edges between Author and Paper
@@ -53,9 +53,7 @@ CREATE (p)-[r:PUBLISHED_IN]->(v)
 
 # Create Author for Journal's Paper
 LOAD CSV WITH HEADERS FROM "file:///author(paper).csv" AS csvLine
-CREATE (e:Author {name: csvLine.author})
-WITH csvLine as csvLine, e as e
-MATCH (p:Paper {key: csvLine.key})
+MATCH (p:Paper {key: csvLine.key}),(e:Author {name: csvLine.author})
 CREATE (e)-[:WRITES]->(p)
 
 # Create Workshop	
@@ -65,16 +63,28 @@ CREATE (c:Workshop {name: csvLine[0]})
 # Create Edition nodes first and then link the edges between Workshop and Editions	
 LOAD CSV WITH HEADERS FROM "file:///Edition(Workshop).csv" AS csvLine	
 CREATE (e:Edition {key: csvLine.key, year: csvLine.year})	
-with csvLine as csvLine, e as e	
+WITH csvLine as csvLine, e as e	
 MATCH (c:Workshop {name: csvLine.booktitle})	
 CREATE (c)-[:HAS]->(e)	
 
 # Create Proceeding nodes first and then link the edges between Proceeding and Conference/Workshop	
 LOAD CSV WITH HEADERS FROM "file:///Proceedings.csv" AS csvLine	
 CREATE (p:Proceeding {key: csvLine.key, name: csvLine.name, isbn: csvLine.isbn})	
-with csvLine as csvLine, p as p	
+WITH csvLine as csvLine, p as p	
 MATCH (w:Workshop {name: csvLine.booktitle})	
 CREATE (w)-[:HAS]->(p)	
 with csvLine as csvLine, p as p	
 MATCH (c:Conference {name: csvLine.booktitle})	
 CREATE (c)-[:HAS]->(p)
+
+
+# Create Reviewer, Reviews, and link the edges between Author, Reviewer and Paper, Reviewer
+LOAD CSV WITH HEADERS FROM "file:///paper_reviewer.csv" as csvLine
+CREATE (rv: Reviewer{ name: csvLine.reviewer}
+CREATE (rev: Review { paper: csvLine.paper, reviewer: csvLine.reviewer})
+WITH csvLine as csvLine, rv as rv, rev as rev
+MATCH (p: Paper{ key: csvLine.paper })
+MATCH (a: Author{ name: csvLine.reviewer })
+CREATE (rv)-[:IS_A]->(a)
+CREATE (rv)-[:SENDS]->(rev)
+CREATE (rev)-[:FOR]->(p)
