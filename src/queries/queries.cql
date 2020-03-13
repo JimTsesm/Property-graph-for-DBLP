@@ -24,7 +24,7 @@ RETURN conference.name as Conference, collect(author.name) as Community
 // Find the top 3 most cited papers of each conference.
 MATCH(c:Conference)-[:HAS]-(e:Edition)<-[:PUBLISHED_IN]-(p:Paper)-[:CITED_BY]-(t:Citation)
 WITH c as c, p as p, count(t) as cites
-ORDER BY c.name, cites
+ORDER BY c.name ASC, cites DESC
 RETURN c.name as Conference, collect(p.title)[..3] as Most3CitedPapers
 
 
