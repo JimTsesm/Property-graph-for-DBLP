@@ -103,10 +103,15 @@ CREATE(k10:Keyword {name: 'keyword2'})
 CREATE(k11:Keyword {name: 'keyword3'})
 CREATE(k12:Keyword {name: 'keyword4'})
 
-# Link Paper to Keyword
+# Link Paper(Edition) to Keyword
 LOAD CSV WITH HEADERS FROM "file:///Keyword.csv" as csvLine
 MATCH (p: Paper{ key: csvLine.key }), (k1: Keyword{ name: csvLine.keyword1 }), (k2: Keyword{ name: csvLine.keyword2 })
 CREATE (p)-[:CONTAINS]->(k1)
 CREATE (p)-[:CONTAINS]->(k2)
 
+# Link Paper(Volume) to Keyword
+LOAD CSV WITH HEADERS FROM "file:///Keyword(journal).csv" as csvLine
+MATCH (p: Paper{ key: csvLine.key }), (k1: Keyword{ name: csvLine.keyword1 }), (k2: Keyword{ name: csvLine.keyword2 })
+CREATE (p)-[:CONTAINS]->(k1)
+CREATE (p)-[:CONTAINS]->(k2)
 

@@ -33,7 +33,7 @@ Match(j:Journal)
 OPTIONAL MATCH (j)-[:HAS]->(v:Volume)
 OPTIONAL MATCH (v)<-[:PUBLISHED_IN]-(p:Paper)
 OPTIONAL MATCH (p)-[:CITED_BY]->(c:Citation)
-WHERE p.year>='2018'
+WHERE p.year >= '2018' and p.year <= '2019'
 RETURN j.name as Journal,  count(DISTINCT p) as Papers18_19, count(c) as Citations2019, count(c)*1.0/count(DISTINCT p) as IMPACT_FACTOR
 ORDER BY IMPACT_FACTOR DESC
 
