@@ -37,3 +37,11 @@ WHERE p.year >= '2018' and p.year <= '2019'
 RETURN j.name as Journal,  count(DISTINCT p) as Papers18_19, count(c) as Citations2019, count(c)*1.0/count(DISTINCT p) as IMPACT_FACTOR
 ORDER BY IMPACT_FACTOR DESC
 
+// Page rank algorithm
+CALL algo.pageRank.stream(
+  'MATCH (n:Paper) RETURN id(n) AS id UNION MATCH (n:Citation) RETURN id(n) AS id',
+  'MATCH (n:Paper)-[:CITED_BY]->(m:Citation) RETURN id(m) AS source, id(n) AS target',
+  {graph: 'cypher'})
+YIELD nodeId, score
+RETURN algo.asNode(nodeId).key AS page,score
+ORDER BY score DESC
