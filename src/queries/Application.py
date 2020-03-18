@@ -105,27 +105,28 @@ class RunQueries():
                         OPTIONAL MATCH (p)-[:CITED_BY]->(c:Citation)
                         WHERE c.confjour in dbCommunity
                         WITH  p as p,cj.name as conference_journal, cj.type as type, count(c) as citations
-                        ORDER BY citations DESC Limit 10
+                        ORDER BY citations DESC Limit 100
                         CREATE (tp: TopPaper{n_citations: citations})
                         CREATE (p)-[:IS_A]->(tp)
                         RETURN p.title as paper, conference_journal, type, citations"""
         self.graph.run(top_papers)
         
-        create_top_reviewers = """CREATE (x:DbReviewer{})
-                                CREATE (y:Guru{})
-                                WITH x as x, y as y
-                                MATCH (a:Author)-[:WRITES]->(p:Paper)-[:IS_A]->(tp:TopPaper)
-                                WITH a, count(p) as cnt
-                                WITH a.name as Author, CASE WHEN cnt>1 THEN 'YES' ELSE 'NO' END as IS_GURU
-                                ORDER BY IS_GURU DESC
-                                CREATE (a)-[:IS_A]->(x)
-                                WITH IS_GURU as IS_GURU, Author as Author
-                                WHERE IS_GURU = 'YES'
-                                CREATE (a)-[:IS_A]->( y)"""
+        create_top_reviewers = """CREATE (x:DbReviewer)
+                                  CREATE (y:Guru)
+                                  WITH x as x, y as y
+                                  MATCH (a:Author)-[:WRITES]->(p:Paper)-[:IS_A]->(tp:TopPaper)
+                                  WITH a, count(p) as cnt, x as x, y as y
+                                  WITH a as a, CASE WHEN cnt>1 THEN 'YES' ELSE 'NO' END as IS_GURU, x as x, y as y
+                                  ORDER BY IS_GURU DESC
+                                  CREATE (a)-[:IS_A]->(x)
+                                  WITH IS_GURU as IS_GURU, a as a, y as y
+                                  WHERE IS_GURU = 'YES'
+                                  CREATE (a)-[:IS_A]->(y)"""
         
         show_top_reviewers = """MATCH (a:Author)-[:WRITES]->(p:Paper)-[:IS_A]->(tp:TopPaper)
                                 WITH a, count(p) as cnt
                                 WITH a.name as TopAuthors, CASE WHEN cnt>1 THEN 'YES' ELSE 'NO' END as IS_GURU
+                                RETURN TopAuthors, IS_GURU
                                 ORDER BY IS_GURU DESC"""
         
         self.graph.run(show_top_reviewers).data()
