@@ -1,33 +1,13 @@
-// Find database community
+// Find the database community
 MATCH(k:Keyword)
 WHERE k.name in ['data management', 'indexing', 'data modeling', 'big data', 'data processing', 'data storage',  'data querying']
-// Find all the conferences that are related to the database community
-// 1)TO CHECK IF WE CAN COMPUTE THE 2 WITHs WITH 1 A UNION, BECAUSE NOW WE COMPUTE A CARTESIAN
-// PRODUCT
-// 2)LOAD Keyword FOR JOURNALS' PAPERS
-// 3)SEE IF THE JOURNALS' PAPERS CAN BE FOUND WITH THE CONFERENCES' ONES
+// Find all the conferences/journals that are related to the database community
 WITH collect(k.name) as db_community
-MATCH(k:Keyword)<-[:CONTAINS]-(p:Paper)-[:PUBLISHED_IN]->(e:Edition)<-[:HAS]-(c:Conference)
-WHERE k.name in db_community
+MATCH(k:Keyword)<-[:CONTAINS]-(p:Paper)-[:PUBLISHED_IN]->(e)<-[:HAS]-(c)
+WHERE k.name in db_community AND ANY(lbl IN ["Edition", "Volume"] WHERE lbl IN LABELS(e)) AND ANY(lbl IN ["Conference", "Journal"] WHERE lbl IN LABELS(c))
 WITH c.name as conference, count(distinct p) as number_of_db_community_papers
-MATCH(k:Keyword)<-[:CONTAINS]-(p:Paper)-[:PUBLISHED_IN]->(e:Edition)<-[:HAS]-(c:Conference)
-WITH conference as conference, number_of_db_community_papers as number_of_db_community_papers , c.name as conference2, count(distinct p) as number_of_papers
-WHERE conference2 = conference and number_of_db_community_papers * 1.0 / number_of_papers >= 0.9
-RETURN conference, number_of_db_community_papers, conference2, number_of_papers, number_of_db_community_papers * 1.0 / number_of_papers as percentage
-
-// =========================== TO UPDATE PREVIOUS WITH THIS ============================
-MATCH(k:Keyword)
-WHERE k.name in ['data management', 'indexing', 'data modeling', 'big data', 'data processing', 'data storage',  'data querying']
-// Find all the conferences that are related to the database community
-// 1)TO CHECK IF WE CAN COMPUTE THE 2 WITHs WITH 1 A UNION, BECAUSE NOW WE COMPUTE A CARTESIAN
-// PRODUCT
-// 2)LOAD Keyword FOR JOURNALS' PAPERS
-// 3)SEE IF THE JOURNALS' PAPERS CAN BE FOUND WITH THE CONFERENCES' ONES
-WITH collect(k.name) as db_community
-MATCH(k:Keyword)<-[:CONTAINS]-(p:Paper)-[:PUBLISHED_IN]->(e:Edition)<-[:HAS]-(c:Conference)
-WHERE k.name in db_community
-WITH c.name as conference, count(distinct p) as number_of_db_community_papers
-MATCH(k:Keyword)<-[:CONTAINS]-(p:Paper)-[:PUBLISHED_IN]->(e:Edition)<-[:HAS]-(c:Conference)
+MATCH(k:Keyword)<-[:CONTAINS]-(p:Paper)-[:PUBLISHED_IN]->(e)<-[:HAS]-(c)
+WHERE ANY(lbl IN ["Edition", "Volume"] WHERE lbl IN LABELS(e)) AND ANY(lbl IN ["Conference", "Journal"] WHERE lbl IN LABELS(c))
 WITH conference as confjour, 'Conference' as type, number_of_db_community_papers as number_of_db_community_papers , c.name as confjour2, count(distinct p) as number_of_papers
 WHERE confjour2 = confjour and number_of_db_community_papers * 1.0 / number_of_papers >= 0.9
 WITH confjour as confjour, type as type, number_of_db_community_papers as number_of_db_community_papers, number_of_papers as number_of_papers, number_of_db_community_papers * 1.0 / number_of_papers as percentage
@@ -40,22 +20,6 @@ RETURN DISTINCT cj.name AS conf_journal, cj.type AS type, cj.n_dbPapers As numbe
 ORDER BY percentage DESC
 // ==================================================================
 
-
-UNION
-
-// Find database community
-MATCH(k:Keyword)
-WHERE k.name in ['data management', 'indexing', 'data modeling', 'big data', 'data processing', 'data storage',  'data querying']
-// Find all the journals that are related to the database community
-WITH collect(k.name) as db_community
-MATCH(k:Keyword)<-[:CONTAINS]-(p:Paper)-[:PUBLISHED_IN]->(e:Volume)<-[:HAS]-(c:Journal)
-WHERE k.name in db_community
-WITH c.name as conference, count(distinct p) as number_of_db_community_papers
-MATCH(k:Keyword)<-[:CONTAINS]-(p:Paper)-[:PUBLISHED_IN]->(e:Volume)<-[:HAS]-(c:Journal)
-WITH conference as conference, number_of_db_community_papers as number_of_db_community_papers , c.name as conference2, count(distinct p) as number_of_papers
-WHERE conference2 = conference and number_of_db_community_papers * 1.0 / number_of_papers >= 0.9
-
-RETURN conference, number_of_db_community_papers, conference2, number_of_papers, number_of_db_community_papers * 1.0 / number_of_papers as percentage
 // ###############################################################
 
 MATCH (cj:dbCommCJ)
