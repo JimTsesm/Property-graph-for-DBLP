@@ -115,3 +115,7 @@ MATCH (p: Paper{ key: csvLine.key }), (k1: Keyword{ name: csvLine.keyword1 }), (
 CREATE (p)-[:CONTAINS]->(k1)
 CREATE (p)-[:CONTAINS]->(k2)
 
+# Add conference attribute to Citation
+LOAD CSV FROM "file:///cite_conf.csv" as csvLine
+MATCH (c:Citation{source_id: csvLine[0]})<-[:CITED_BY]-(p:Paper)<-[:HAS_PAPER]-(:dbCommCJ)
+SET c.confjour=csvLine[1]
