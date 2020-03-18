@@ -103,7 +103,7 @@ class RunQueries():
                         WITH  collect(cj.name) as dbCommunity
                         MATCH (cj:dbCommCJ)-[:HAS_PAPER]->(p:Paper)
                         OPTIONAL MATCH (p)-[:CITED_BY]->(c:Citation)
-                        // WHERE c.confjour in dbCommunity
+                        WHERE c.confjour in dbCommunity
                         WITH  p as p,cj.name as conference_journal, cj.type as type, count(c) as citations
                         ORDER BY citations DESC Limit 10
                         CREATE (tp: TopPaper{n_citations: citations})
@@ -111,9 +111,24 @@ class RunQueries():
                         RETURN p.title as paper, conference_journal, type, citations"""
         self.graph.run(top_papers)
         
-        top_reviewers = """"""
+        create_top_reviewers = """CREATE (x:DbReviewer{})
+                                CREATE (y:Guru{})
+                                WITH x as x, y as y
+                                MATCH (a:Author)-[:WRITES]->(p:Paper)-[:IS_A]->(tp:TopPaper)
+                                WITH a, count(p) as cnt
+                                WITH a.name as Author, CASE WHEN cnt>1 THEN 'YES' ELSE 'NO' END as IS_GURU
+                                ORDER BY IS_GURU DESC
+                                CREATE (a)-[:IS_A]->(x)
+                                WITH IS_GURU as IS_GURU, Author as Author
+                                WHERE IS_GURU = 'YES'
+                                CREATE (a)-[:IS_A]->( y)"""
         
-        self.graph.run(top_reviewers).data()
+        show_top_reviewers = """MATCH (a:Author)-[:WRITES]->(p:Paper)-[:IS_A]->(tp:TopPaper)
+                                WITH a, count(p) as cnt
+                                WITH a.name as TopAuthors, CASE WHEN cnt>1 THEN 'YES' ELSE 'NO' END as IS_GURU
+                                ORDER BY IS_GURU DESC"""
+        
+        self.graph.run(show_top_reviewers).data()
 
 if __name__ == '__main__':
     rq = RunQueries()
