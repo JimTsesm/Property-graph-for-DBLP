@@ -52,9 +52,38 @@ class RunQueries():
                     RETURN j.name as Journal,  count(DISTINCT p) as Papers18_19, count(c) as Citations2019, count(c)*1.0/count(DISTINCT p) as IMPACT_FACTOR
                     ORDER BY IMPACT_FACTOR DESC"""
         return self.graph.run(query).data()
+
+    def pageRank(self):
+        query = """CALL algo.pageRank.stream(
+                    'MATCH (n:Paper) RETURN id(n) AS id UNION MATCH (n:Citation) RETURN id(n) AS id',
+                    'MATCH (n:Paper)-[:CITED_BY]->(m:Citation) RETURN id(m) AS source, id(n) AS target',
+                    {graph: 'cypher'})
+                    YIELD nodeId, score
+                    RETURN algo.asNode(nodeId).key AS page,score
+                    ORDER BY score DESC"""
+        return self.graph.run(query).data()
         
+    def betweenness(self):
+        query = """CALL algo.betweenness.stream(
+                    'MATCH (p) WHERE ANY(lbl IN ["Paper", "Keyword", "Topic"] WHERE lbl IN LABELS(p)) RETURN id(p) as id', 
+                    'MATCH (p1)-[r]->(p2) WHERE TYPE(r) IN ["RELATED_TO", "CONTAINS"] RETURN id(p1) as source,id(p2) as target', 
+                    {concurrency:4, graph:'cypher'})
+                YIELD nodeId, centrality
+                WITH nodeId AS nodeId, centrality AS centrality
+                MATCH (k:Keyword) WHERE id(k) = nodeId
+                RETURN algo.asNode(nodeId).name, centrality
+                ORDER BY centrality desc"""
+        return self.graph.run(query).data()
+
+    def reccomender(self):
+        query = """"""
+        
+        return self.graph.run(query).data()
+
 if __name__ == '__main__':
     rq = RunQueries()
+    
+    # Run the queries
     print("Hindex")
     print(rq.find_hindex())
     print("Most cited papers")
@@ -63,3 +92,13 @@ if __name__ == '__main__':
     print(rq.find_communities())
     print("Impact factor")
     print(rq.find_impact_factor())
+
+    # Run the algorithms
+    print("Page rank")
+    print(rq.pageRank())
+    print("Betweenness centrality")
+    print(rq.betweenness())
+    
+    # Run the reccomender
+    print("Reccomender")
+    print(rq.reccomender())
