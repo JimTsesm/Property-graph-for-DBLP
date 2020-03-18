@@ -45,3 +45,14 @@ CALL algo.pageRank.stream(
 YIELD nodeId, score
 RETURN algo.asNode(nodeId).key AS page,score
 ORDER BY score DESC
+
+// Betweenness centrality algorithm
+CALL algo.betweenness.stream(
+	 'MATCH (p) WHERE ANY(lbl IN ["Paper", "Keyword", "Topic"] WHERE lbl IN LABELS(p)) RETURN id(p) as id', 
+     'MATCH (p1)-[r]->(p2) WHERE TYPE(r) IN ["RELATED_TO", "CONTAINS"] RETURN id(p1) as source,id(p2) as target', 
+     {concurrency:4, graph:'cypher'})
+YIELD nodeId, centrality
+WITH nodeId AS nodeId, centrality AS centrality
+MATCH (k:Keyword) WHERE id(k) = nodeId
+RETURN algo.asNode(nodeId).name, centrality
+ORDER BY centrality desc
