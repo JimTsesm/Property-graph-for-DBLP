@@ -13,7 +13,8 @@ WHERE confjour2 = confjour and number_of_db_community_papers * 1.0 / number_of_p
 WITH confjour as confjour, type as type, number_of_db_community_papers as number_of_db_community_papers, number_of_papers as number_of_papers, number_of_db_community_papers * 1.0 / number_of_papers as percentage
 CREATE (cj:dbCommCJ{ name:confjour, type:type, n_dbPapers: number_of_db_community_papers,n_papers:number_of_papers, percentage: percentage }) 
 WITH cj as cj
-MATCH (c:Conference {name: cj.name})-[:HAS]->(e:Edition)<-[:PUBLISHED_IN]-(p:Paper)
+MATCH (c)-[:HAS]->(e)<-[:PUBLISHED_IN]-(p:Paper)
+WHERE c.name = cj.name and ANY(lbl IN ["Edition", "Volume"] WHERE lbl IN LABELS(e)) AND ANY(lbl IN ["Conference", "Journal"] WHERE lbl IN LABELS(c))
 CREATE UNIQUE (cj)-[:HAS_PAPER]->(p)
 CREATE UNIQUE (c)-[:IS_A]->(cj)
 RETURN DISTINCT cj.name AS conf_journal, cj.type AS type, cj.n_dbPapers As number_of_db_community_papers, cj.n_papers AS number_of_papers, cj.percentage AS percentage
