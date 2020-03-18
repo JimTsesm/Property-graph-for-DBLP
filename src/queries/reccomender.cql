@@ -8,7 +8,7 @@ WHERE k.name in db_community AND ANY(lbl IN ["Edition", "Volume"] WHERE lbl IN L
 WITH c.name as conference, count(distinct p) as number_of_db_community_papers
 MATCH(k:Keyword)<-[:CONTAINS]-(p:Paper)-[:PUBLISHED_IN]->(e)<-[:HAS]-(c)
 WHERE ANY(lbl IN ["Edition", "Volume"] WHERE lbl IN LABELS(e)) AND ANY(lbl IN ["Conference", "Journal"] WHERE lbl IN LABELS(c))
-WITH conference as confjour, 'Conference' as type, number_of_db_community_papers as number_of_db_community_papers , c.name as confjour2, count(distinct p) as number_of_papers
+WITH conference as confjour, LABELS(c)[0] as type, number_of_db_community_papers as number_of_db_community_papers , c.name as confjour2, count(distinct p) as number_of_papers
 WHERE confjour2 = confjour and number_of_db_community_papers * 1.0 / number_of_papers >= 0.9
 WITH confjour as confjour, type as type, number_of_db_community_papers as number_of_db_community_papers, number_of_papers as number_of_papers, number_of_db_community_papers * 1.0 / number_of_papers as percentage
 CREATE (cj:dbCommCJ{ name:confjour, type:type, n_dbPapers: number_of_db_community_papers,n_papers:number_of_papers, percentage: percentage }) 
